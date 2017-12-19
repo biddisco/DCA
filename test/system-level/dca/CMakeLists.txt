@@ -16,3 +16,11 @@ dca_add_gtest(dca_sp_DCA+_thread_test
   EXTENSIVE
   INCLUDE_DIRS ${DCA_INCLUDE_DIRS}
   LIBS ${DCA_LIBS})
+
+dca_add_gtest(dca_sp_DCA+_hpx_test
+  GTEST_MAIN
+  EXTENSIVE
+  HPX
+  INCLUDE_DIRS ${DCA_INCLUDE_DIRS}
+  LIBS ${DCA_LIBS} ${DCA_THREADING_LIB})
+

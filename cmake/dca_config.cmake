@@ -206,14 +206,32 @@ if (UNIX)
 endif()
 
 ################################################################################
+# Enable HPX threading support if desired
+option(DCA_WITH_HPX "Enable HPX for multi-threading" OFF)
+if (DCA_WITH_HPX)
+  # if HPX is not found then DCA_HAVE_HPX will not be set
+  include(dca_hpx)
+  if (NOT DCA_HAVE_HPX)
+    message(FATAL_ERROR "HPX library not found but requested.")
+  endif()
+  set(DCA_THREADING_LIBS ${DCA_THREADING_LIBS} parallel_hpx hpx)
+endif()
+
+################################################################################
 # Use threaded cluster solver.
 option(DCA_WITH_THREADED_SOLVER "Use multiple walker and accumulator threads in the cluster solver." ON)
 
 if (DCA_WITH_THREADED_SOLVER)
   dca_add_config_define(DCA_WITH_THREADED_SOLVER)
-  set(DCA_THREADED_SOLVER_TYPE dca::phys::solver::StdThreadQmciClusterSolver<ClusterSolverBaseType>)
-  set(DCA_THREADED_SOLVER_INCLUDE
+  if (DCA_HAVE_HPX)
+    set(DCA_THREADED_SOLVER_TYPE dca::phys::solver::HPXQmciClusterSolver<ClusterSolverBaseType>)
+    set(DCA_THREADED_SOLVER_INCLUDE
+      "dca/phys/dca_step/cluster_solver/hpx_qmci/hpx_qmci_cluster_solver.hpp")
+  else()
+    set(DCA_THREADED_SOLVER_TYPE dca::phys::solver::StdThreadQmciClusterSolver<ClusterSolverBaseType>)
+    set(DCA_THREADED_SOLVER_INCLUDE
       "dca/phys/dca_step/cluster_solver/stdthread_qmci/stdthread_qmci_cluster_solver.hpp")
+  endif()
 endif()
 
 ################################################################################
