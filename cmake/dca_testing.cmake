@@ -13,6 +13,7 @@ include(CMakeParseArguments)
 #               [GTEST_MAIN]
 #               [MPI [MPI_NUMPROC procs]]
 #               [CUDA]
+#               [STDTHREAD] [HPX]
 #               [INCLUDE_DIRS dir1 [dir2 ...]]
 #               [SOURCES src1 [src2 ...]]
 #               [LIBS lib1 [lib2 ...]])
@@ -23,7 +24,7 @@ include(CMakeParseArguments)
 # MPI or CUDA may be given to indicate that the test requires these libraries. MPI_NUMPROC is the
 # number of MPI processes to use for a test with MPI, the default value is 1.
 function(dca_add_gtest name)
-  set(options FAST EXTENSIVE STOCHASTIC PERFORMANCE GTEST_MAIN MPI CUDA)
+  set(options FAST EXTENSIVE STOCHASTIC PERFORMANCE GTEST_MAIN MPI CUDA STDTHREAD HPX CUDA)
   set(oneValueArgs MPI_NUMPROC)
   set(multiValueArgs INCLUDE_DIRS SOURCES LIBS)
   cmake_parse_arguments(DCA_ADD_GTEST "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -41,6 +42,7 @@ function(dca_add_gtest name)
                                        [GTEST_MAIN]\n
                                        [MPI [MPI_NUMPROC procs]]\n
                                        [CUDA]\n
+                                       [HPX]\n
                                        [INCLUDE_DIRS dir1 [dir2 ...]]\n
                                        [SOURCES src1 [src2 ...]]\n
                                        [LIBS lib1 [lib2 ...]])")
@@ -77,11 +79,20 @@ function(dca_add_gtest name)
     return()
   endif()
 
+  # Only build the test if the required libraries are available.
+  if (DCA_ADD_GTEST_HPX AND NOT DCA_HAVE_HPX)
+    return()
+  endif()
+
   if (DCA_ADD_GTEST_CUDA AND NOT DCA_HAVE_CUDA)
     return()
   endif()
 
   add_executable(${name} ${name}.cpp ${DCA_ADD_GTEST_SOURCES})
+
+  if(DCA_ADD_GTEST_HPX AND DCA_HAVE_HPX)
+    hpx_setup_target(${name})
+  endif()
 
   # Create a macro with the project source dir. We use this as the root path for reading files in
   # tests.
@@ -123,7 +134,7 @@ function(dca_add_gtest name)
     if (TEST_RUNNER)
       add_test(NAME ${name}
                COMMAND ${TEST_RUNNER} ${MPIEXEC_NUMPROC_FLAG} 1
-	               ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:${name}>")
+                   ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:${name}>")
     else (TEST_RUNNER)
       add_test(NAME ${name}
                COMMAND "$<TARGET_FILE:${name}>")
