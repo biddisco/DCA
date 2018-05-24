@@ -88,36 +88,41 @@ function(dca_add_gtest name)
     return()
   endif()
 
-  add_executable(${name} ${name}.cpp ${DCA_ADD_GTEST_SOURCES})
+  if (DCA_ADD_GTEST_HPX)
+    set(test_name ${name}_HPX)
+  else()
+    set(test_name ${name})
+  endif()
+  add_executable(${test_name} ${name}.cpp ${DCA_ADD_GTEST_SOURCES})
 
   if(DCA_ADD_GTEST_HPX AND DCA_HAVE_HPX)
-    hpx_setup_target(${name})
+    hpx_setup_target(${test_name})
   endif()
 
   # Create a macro with the project source dir. We use this as the root path for reading files in
   # tests.
-  target_compile_definitions(${name} PRIVATE DCA_SOURCE_DIR=\"${PROJECT_SOURCE_DIR}\")
+  target_compile_definitions(${test_name} PRIVATE DCA_SOURCE_DIR=\"${PROJECT_SOURCE_DIR}\")
 
   if (DCA_ADD_GTEST_GTEST_MAIN)
     # Use gtest main.
-    target_link_libraries(${name} gtest_main ${DCA_ADD_GTEST_LIBS})
+    target_link_libraries(${test_name} gtest_main ${DCA_ADD_GTEST_LIBS})
   else()
     # Test has its own main.
-    target_link_libraries(${name} gtest ${DCA_ADD_GTEST_LIBS})
+    target_link_libraries(${test_name} gtest ${DCA_ADD_GTEST_LIBS})
   endif()
 
   if (DCA_ADD_GTEST_CUDA)
-    target_include_directories(${name} PRIVATE ${CUDA_TOOLKIT_INCLUDE})
-    target_link_libraries(${name} ${DCA_CUDA_LIBS})
-    target_compile_definitions(${name} PRIVATE DCA_HAVE_CUDA)
+    target_include_directories(${test_name} PRIVATE ${CUDA_TOOLKIT_INCLUDE})
+    target_link_libraries(${test_name} ${DCA_CUDA_LIBS})
+    target_compile_definitions(${test_name} PRIVATE DCA_HAVE_CUDA)
     if(DCA_HAVE_MAGMA)
-      target_include_directories(${name} PRIVATE ${MAGMA_INCLUDE_DIR})
-      target_compile_definitions(${name} PRIVATE DCA_HAVE_MAGMA)
+      target_include_directories(${test_name} PRIVATE ${MAGMA_INCLUDE_DIR})
+      target_compile_definitions(${test_name} PRIVATE DCA_HAVE_MAGMA)
     endif()
-    cuda_add_cublas_to_target(${name})
+    cuda_add_cublas_to_target(${test_name})
   endif()
 
-  target_include_directories(${name} PRIVATE
+  target_include_directories(${test_name} PRIVATE
     ${gtest_SOURCE_DIR}/include
     ${DCA_ADD_GTEST_INCLUDE_DIRS})
 
@@ -126,18 +131,19 @@ function(dca_add_gtest name)
       set(DCA_ADD_GTEST_MPI_NUMPROC 1)
     endif()
 
-    add_test(NAME ${name}
+    add_test(NAME ${test_name}
              COMMAND ${TEST_RUNNER} ${MPIEXEC_NUMPROC_FLAG} ${DCA_ADD_GTEST_MPI_NUMPROC}
-                     ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:${name}>")
+                     ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:${test_name}>")
                  target_link_libraries(${name} ${MPI_CEEEE_LIBRARIES})
+
   else()
     if (TEST_RUNNER)
-      add_test(NAME ${name}
+      add_test(NAME ${test_name}
                COMMAND ${TEST_RUNNER} ${MPIEXEC_NUMPROC_FLAG} 1
-                   ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:${name}>")
+                   ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:${test_name}>")
     else (TEST_RUNNER)
-      add_test(NAME ${name}
-               COMMAND "$<TARGET_FILE:${name}>")
+      add_test(NAME ${test_name}
+               COMMAND "$<TARGET_FILE:${test_name}>")
     endif (TEST_RUNNER)
   endif()
 

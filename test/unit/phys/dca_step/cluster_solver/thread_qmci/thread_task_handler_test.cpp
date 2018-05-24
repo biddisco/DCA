@@ -113,6 +113,7 @@ TEST(ThreadTaskHandlerDeathTest, walkerIDToRngIndex) {
 
 #ifdef DCA_HAVE_HPX
 int hpx_main(int argc, char *argv[]) {
+    std::cout << "Running test in HPX thread\n";
     ::testing::InitGoogleTest(&argc, argv);
     //
     int result = RUN_ALL_TESTS();
