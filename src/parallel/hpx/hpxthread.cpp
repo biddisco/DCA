@@ -10,6 +10,6 @@ log_mutex_type log_mutex;
 namespace dca {
 namespace parallel {
 
-hpxthread::hpxthread() : threads_(0), data_(0) {}
+//hpxthread::hpxthread() : threads_(0), data_(0) {}
 
 }}

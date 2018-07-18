@@ -31,7 +31,7 @@ template <class qmci_accumulator_type>
 class hpx_qmci_accumulator : protected qmci_accumulator_type {
   typedef typename qmci_accumulator_type::my_parameters_type parameters_type;
   using Data = typename qmci_accumulator_type::DataType;
- 
+
   typedef hpx_qmci_accumulator<qmci_accumulator_type> this_type;
 
 public:
@@ -58,11 +58,10 @@ public:
   using qmci_accumulator_type::get_number_of_measurements;
 protected:
   using qmci_accumulator_type::get_Gflop;
-  using qmci_accumulator_type::get_sign;
 
 private:
   using qmci_accumulator_type::parameters;
-  using qmci_accumulator_type::data_; 
+  using qmci_accumulator_type::data_;
 
   int thread_id;
 };
