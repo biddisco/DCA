@@ -62,8 +62,8 @@ namespace solver {
 // dca::phys::solver::
 
 template <class qmci_integrator_type>
- 
- 
+
+
 struct HPXQmciClusterSolver
     : public hpx::components::simple_component_base<HPXQmciClusterSolver<qmci_integrator_type>>,
       protected qmci_integrator_type
@@ -99,7 +99,7 @@ public:
   template <typename Writer>
   void write(Writer& reader);
 
-  void initialize(int dca_iteration0);
+  void initialize(int dca_iteration);
 
   void integrate();
 
@@ -123,7 +123,6 @@ private:
   accumulator_ptr accumulator_measure(accumulator_ptr accum, walker_ptr walker);
 
   /*
-
   // needed if we want to execute start_walker remotely
   struct walker_action : hpx::actions::make_action<
     walker_ptr (HPXQmciClusterSolver<qmci_integrator_type>::*)(int),
@@ -135,7 +134,6 @@ private:
     accumulator_ptr (HPXQmciClusterSolver<qmci_integrator_type>::*)(int),
     &HPXQmciClusterSolver<qmci_integrator_type>::accumulator_initialize, accumulator_action>
   {};
-
   */
 
   void warm_up(walker_ptr walker, int id);
@@ -147,7 +145,7 @@ private:
 private:
   //
   std::atomic<int> walkers_active;
-  std::atomic<int> dca_iteration;
+//  std::atomic<int> dca_iteration;
   std::atomic<int> acc_finished;
 
   hpx::lcos::local::promise<void> accumulators_ready;
@@ -187,7 +185,7 @@ HPXQmciClusterSolver<qmci_integrator_type>::HPXQmciClusterSolver(parameters_type
       acc_finished(0),
       nr_walkers(parameters.get_walkers()),
       nr_accumulators(parameters.get_accumulators()),
-      thread_task_handler_(nr_walkers, nr_accumulators),
+      thread_task_handler_(nr_walkers, nr_accumulators, parameters_ref.shared_walk_and_accumulation_thread()),
       large_stack_executor(hpx::threads::thread_stacksize_large)
 {
   DCA_LOG("HPXQmciClusterSolver constructor");
@@ -221,12 +219,12 @@ void HPXQmciClusterSolver<qmci_integrator_type>::write(Writer& writer)
 
 //----------------------------------------------------------------------------
 template <class qmci_integrator_type>
-void HPXQmciClusterSolver<qmci_integrator_type>::initialize(int dca_iteration0)
+void HPXQmciClusterSolver<qmci_integrator_type>::initialize(int dca_iteration)
 {
   DCA_LOG("HPXQmciClusterSolver initialize");
   profiler_type profiler(__FUNCTION__, "HPX-MC-Integration", __LINE__);
 
-  dca_iteration = dca_iteration0;
+//  dca_iteration = dca_iteration0;
   qmci_integrator_type::initialize(dca_iteration);
   acc_finished = 0;
 }
@@ -255,11 +253,10 @@ void HPXQmciClusterSolver<qmci_integrator_type>::integrate()
 
     dca::profiling::WallTime start_time;
 
-    for (int i = 0; i < nr_walkers + nr_accumulators; ++i) {
-      // walker and accumulator tasks use a lot of temp stack space,
-      // so use a large stack size executor
-      //
-      if (thread_task_handler_.getTask(i) == "walker") {
+    // walker and accumulator tasks use a lot of temp stack space,
+    // so use a large stack size executor
+    //
+    for (int i = 0; i < nr_walkers; ++i) {
         DCA_LOG("starting an async walker");
         auto init = hpx::async(large_stack_executor, [=] { return this->walker_initialize(i); });
         auto sweep = init.then(large_stack_executor, [=](walker_future&& finit) {
@@ -268,16 +265,13 @@ void HPXQmciClusterSolver<qmci_integrator_type>::integrate()
         auto done = sweep.then(large_stack_executor, [=](walker_future&& fsweep) {
           return this->walker_sweep_completed(fsweep.get());
         });
-      }
-      else if (thread_task_handler_.getTask(i) == "accumulator") {
+    }
+    for (int i = 0; i < 1/*nr_accumulators*/; ++i) {
         DCA_LOG("starting an async accumulator");
         auto init = hpx::async(large_stack_executor, [=] { return accumulator_initialize(i); });
         auto measure = init.then(large_stack_executor, [=](accumulator_future&& accum) {
           return this->accumulator_try_measure(accum.get());
         });
-      }
-      else
-        throw std::logic_error("Thread is neither a walker nor an accumulator.");
     }
 
     // wait until accumulators have done their work and complete is made ready
@@ -289,16 +283,13 @@ void HPXQmciClusterSolver<qmci_integrator_type>::integrate()
     total_time = duration.sec + 1.e-6 * duration.usec;
   }
 
-  if (concurrency.id() == concurrency.first())
-    std::cout << "\n\t\t QMCI ends\n" << std::endl;
-
   if (concurrency.id() == concurrency.first()) {
     std::cout << "HPX on-node integration has ended: " << dca::util::print_time()
-              << "\n\nTotal number of measurements: "
-              << concurrency.number_of_processors() *
-                     parameters.get_measurements_per_process_and_accumulator() * nr_accumulators
-              << std::endl;
+              << "\n\nTotal number of measurements: " << parameters.get_measurements()
+              << "\nQMC-time\t" << total_time << std::endl;
   }
+
+  qmci_integrator_type::accumulator.finalize();
 }
 
 //----------------------------------------------------------------------------
@@ -389,8 +380,9 @@ typename HPXQmciClusterSolver<qmci_integrator_type>::walker_ptr HPXQmciClusterSo
       return nullptr;
     }
     else {
-      DCA_LOG("walker " << walker->get_thread_id() << " NULL accumulator :"
-                     << "additional steps " << parameters.get_additional_steps());
+        throw std::runtime_error("This code is deprecated, probably");
+//      DCA_LOG("walker " << walker->get_thread_id() << " NULL accumulator :"
+//                     << "additional steps " << parameters.get_additional_steps());
 ////      if (parameters.get_additional_steps() > 0) {
 ////        for (int i = 0; i < parameters.get_additional_steps(); ++i) {
 ////          profiler_type profiler("additional steps", "HPX-MC-walker", __LINE__,
@@ -424,15 +416,13 @@ void HPXQmciClusterSolver<qmci_integrator_type>::warm_up(walker_ptr walker, int 
 
   for (int i = 0; i < parameters.get_warm_up_sweeps(); i++) {
     walker->do_sweep();
-
-    if (id == 0)
-      walker->update_shell(i, parameters.get_warm_up_sweeps());
+    walker->update_shell(i, parameters.get_warm_up_sweeps());
   }
 
   walker->is_thermalized() = true;
 
   if ((id == 0) && concurrency.id() == concurrency.first()) {
-    std::cout << "\n\t\t warm-up ends\n" << std::endl;
+    std::cout << "\n\t\t HPX warm-up ends\n" << std::endl;
   }
 }
 
@@ -452,7 +442,8 @@ typename HPXQmciClusterSolver<qmci_integrator_type>::accumulator_ptr HPXQmciClus
 //----------------------------------------------------------------------------
 template <class qmci_integrator_type>
 typename HPXQmciClusterSolver<qmci_integrator_type>::accumulator_ptr HPXQmciClusterSolver<
-    qmci_integrator_type>::accumulator_try_measure(accumulator_ptr accum) {
+    qmci_integrator_type>::accumulator_try_measure(accumulator_ptr accum)
+{
   walker_ptr walker = nullptr;
   {
     scoped_lock lock(walkers_queue_mutex);
@@ -484,14 +475,14 @@ typename HPXQmciClusterSolver<qmci_integrator_type>::accumulator_ptr HPXQmciClus
   {
     profiler_type profiler("HPX-accumulator accumulating", "HPX-MC-accumulator", __LINE__, id);
     if (id == 1) {
-     // this->update_shell(measurement_num, parameters.get_measurements_per_process_and_accumulator());
+       walker->update_shell(measurement_num, parameters.get_measurements());
     }
     //
     DCA_LOG("Accumulator " << id << " calling measure");
     accum->measure();
 
     // if the accumulator has done all the measurements it needs, then we can quit
-    if (++accumulator_counter[accum.get()] >= parameters.get_measurements_per_process_and_accumulator()) {
+    if (++accumulator_counter[accum.get()] >= parameters.get_measurements()) {
       DCA_LOG("Accumulator " << id << " calling sum_to : finished");
       scoped_lock lock(merge_mutex);
       accum->sum_to(accumulator);

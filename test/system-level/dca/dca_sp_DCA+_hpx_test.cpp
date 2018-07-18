@@ -176,10 +176,10 @@ int main(int argc, char* argv[])
 //    cfg.push_back("hpx.run_hpx_main!=1");
 
     // We force this test to use several threads by default.
-    std::vector<std::string> const cfg = {
-        "hpx.os_threads=all"
-    };
+//    std::vector<std::string> const cfg = {
+//        "hpx.os_threads=all"
+//    };
 
     // Initialize and run HPX
-    return hpx::init(argc, argv, cfg);
+    return hpx::init(argc, argv);
 }

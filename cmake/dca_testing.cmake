@@ -83,6 +83,7 @@ function(dca_add_gtest name)
   if (DCA_ADD_GTEST_HPX AND NOT DCA_HAVE_HPX)
     return()
   endif()
+  message("DCA_HAVE_HPX is ${DCA_HAVE_HPX}")
 
   if (DCA_ADD_GTEST_CUDA AND NOT DCA_HAVE_CUDA)
     return()
