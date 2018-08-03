@@ -202,7 +202,11 @@ endif()
 ################################################################################
 # Threading options/settings
 if (UNIX)
-  set(DCA_THREADING_LIBS "pthread")
+  set(DCA_THREADING_LIBS pthread)
+endif()
+
+if (DCA_WITH_THREADED_SOLVER)
+  set(DCA_THREADING_LIBS ${DCA_THREADING_LIBS} parallel_stdthread)
 endif()
 
 ################################################################################
@@ -214,7 +218,7 @@ if (DCA_WITH_HPX)
   if (NOT DCA_HAVE_HPX)
     message(FATAL_ERROR "HPX library not found but requested.")
   endif()
-  set(DCA_THREADING_LIBS ${DCA_THREADING_LIBS} parallel_hpx hpx)
+  set(DCA_THREADING_LIBS parallel_hpx hpx)
 endif()
 
 ################################################################################
