@@ -7,7 +7,7 @@ set(TEST_LIBS     ${DCA_LIBS};statistical_testing)
 
 dca_add_gtest(ctaux_square_lattice_verification_stattest
     EXTENSIVE
-    PTHREADS
+    STDTHREAD
     # Run with more ranks for better error detection.
     MPI MPI_NUMPROC 1
     INCLUDE_DIRS ${TEST_INCLUDES}
