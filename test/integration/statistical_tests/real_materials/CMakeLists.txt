@@ -1,5 +1,5 @@
 set(TEST_INCLUDES ${DCA_INCLUDE_DIRS} ${PROJECT_SOURCE_DIR})
-set(TEST_LIBRARIES ${DCA_LIBS} ${DCA_CUDA_LIBS} statistical_testing parallel_stdthread)
+set(TEST_LIBRARIES ${DCA_LIBS} ${DCA_CUDA_LIBS} statistical_testing)
 
 #  This application was used to build the reference data for the NiO test.
 #add_executable(NiO_fullDCA NiO_fullDCA.cpp)
@@ -13,7 +13,7 @@ dca_add_gtest(NiO_stattest
     # Run with more ranks for better error detection.
     MPI MPI_NUMPROC 1
     INCLUDE_DIRS "${TEST_INCLUDES}"
-    LIBS     "${TEST_LIBRARIES}" 
+    LIBS     "${TEST_LIBRARIES}"
     )
 
 configure_file(NiO_coarse_grained.hdf5 ${CMAKE_CURRENT_BINARY_DIR}/NiO_coarse_grained.hdf5 COPYONLY)

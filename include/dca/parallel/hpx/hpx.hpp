@@ -15,47 +15,87 @@
 #ifndef DCA_PARALLEL_HPX_HPX_HPP
 #define DCA_PARALLEL_HPX_HPX_HPP
 
+#include <hpx/hpx.hpp>
+#include <hpx/lcos/local/spinlock.hpp>
+#include <hpx/lcos/local/condition_variable.hpp>
+#include <hpx/lcos/future.hpp>
+//
 #include <vector>
 #include <thread>
 
 namespace dca {
 namespace parallel {
 
-//class hpxthread {
-//public:
-//  hpxthread();
 
-//  void execute(int num_threads, void* (*start_routine)(void*), void* arg)
-//  {
-//      fork(num_threads, start_routine, arg);
-//      join();
-//  }
+struct thread_traits {
+    template <typename T>
+    using future_type               = hpx::lcos::future<T>;
+    using mutex_type                = hpx::lcos::local::mutex;
+    using condition_variable_type   = hpx::lcos::local::condition_variable;
+    using scoped_lock               = std::lock_guard<mutex_type>;
+    using unique_lock               = std::unique_lock<mutex_type>;
+};
 
-//private:
-//  void fork(int num_threads, void* (*start_routine)(void*), void* arg)
-//  {
-//      threads_.clear();
-//      data_.resize(num_threads);
+class ThreadPool {
+public:
+  // Creates a pool with n_threads.
+    // Actually does nothing, HPX does not need to allocate threads
+  ThreadPool(size_t /*n_threads*/ = 0) {}
 
-//      for (int id = 0; id < num_threads; id++) {
-//        data_[id].id = id;
-//        data_[id].num_threads = num_threads;
-//        data_[id].arg = arg;
-//        //
-//        threads_.push_back(std::thread(start_routine, (void*)(&data_[id])));
-//      }
-//  }
+  ThreadPool(const ThreadPool& /*other*/) = delete;
+  ThreadPool(ThreadPool&& /*other*/) = default;
 
-//  void join() {
-//      for (int id = 0; id < threads_.size(); id++) {
-//        threads_[id].join();
-//      }
-//      threads_.clear();
-//  }
+  // // we don't do anything here
+  void enlarge(std::size_t /*n_threads*/) {}
 
-//  std::vector<std::thread>   threads_;
-//  std::vector<ThreadingData> data_;
-//};
+  // Call asynchronously the function f with arguments args. This method is thread safe.
+  // Returns: a future to the result of f(args...).
+  template <class F, class... Args>
+  auto enqueue(F&& f, Args&&... args)
+  {
+    return hpx::async(f, args...);
+  }
+
+  // Conclude all the pending work and destroy the threds spawned by this class.
+  ~ThreadPool() {}
+
+  // Returns the number of threads used by this class.
+  std::size_t size() const {
+    return hpx::get_num_worker_threads();
+  }
+
+  // Returns a static instance.
+  static ThreadPool& get_instance() {
+    static ThreadPool global_pool;
+    return global_pool;
+  }
+};
+
+
+struct hpxthread
+{
+  hpxthread() {};
+
+  // Execute the function f(id, num_threads, args...) as num_threads asynchronous tasks with id in
+  // [0, num_threads - 1]. Then wait for the completion of the tasks.
+  template <class F, class... Args>
+  void execute(int num_threads, F&& f, Args&&... args)
+  {
+    std::vector<thread_traits::future_type<void>> futures;
+    //
+    auto& pool = ThreadPool::get_instance();
+    pool.enlarge(num_threads);
+
+    // Fork.
+    for (int id = 0; id < num_threads; ++id)
+      futures.emplace_back(
+          pool.enqueue(std::forward<F>(f), id, num_threads, std::forward<Args>(args)...));
+
+    // Join.
+    for (auto& future : futures)
+      future.wait();
+  }
+};
 
 }  // parallel
 }  // dca

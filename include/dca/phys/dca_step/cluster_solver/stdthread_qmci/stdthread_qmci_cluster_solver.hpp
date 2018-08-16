@@ -15,13 +15,12 @@
 
 #include <atomic>
 #include <iostream>
-#include <future>
 #include <queue>
 #include <stdexcept>
 #include <vector>
 
+#include "dca/config/threading.hpp"
 #include "dca/linalg/util/handle_functions.hpp"
-#include "dca/parallel/stdthread/thread_pool/thread_pool.hpp"
 #include "dca/phys/dca_step/cluster_solver/stdthread_qmci/stdthread_qmci_accumulator.hpp"
 #include "dca/phys/dca_step/cluster_solver/thread_task_handler.hpp"
 #include "dca/profiling/events/time.hpp"
@@ -100,11 +99,11 @@ private:
 
   std::queue<stdthread_accumulator_type*> accumulators_queue;
 
-  std::mutex mutex_print;
-  std::mutex mutex_merge;
-  std::mutex mutex_queue;
-  std::mutex mutex_acc_finished;
-  std::mutex mutex_numerical_error;
+  dca::parallel::thread_traits::mutex_type mutex_print;
+  dca::parallel::thread_traits::mutex_type mutex_merge;
+  dca::parallel::thread_traits::mutex_type mutex_queue;
+  dca::parallel::thread_traits::mutex_type mutex_acc_finished;
+  dca::parallel::thread_traits::mutex_type mutex_numerical_error;
 };
 
 template <class qmci_integrator_type>
@@ -164,7 +163,7 @@ void StdThreadQmciClusterSolver<qmci_integrator_type>::integrate() {
   if (concurrency.id() == concurrency.first())
     thread_task_handler_.print();
 
-  std::vector<std::future<void>> futures;
+  std::vector<dca::parallel::thread_traits::future_type<void>> futures;
 
   dca::profiling::WallTime start_time;
 
@@ -239,7 +238,7 @@ void StdThreadQmciClusterSolver<qmci_integrator_type>::start_walker(int id) {
       acc_ptr = NULL;
 
       while (acc_ptr == NULL) {  // checking for available accumulators
-        std::unique_lock<std::mutex> lock(mutex_queue);
+        std::unique_lock<dca::parallel::thread_traits::mutex_type> lock(mutex_queue);
         if (!accumulators_queue.empty()) {
           acc_ptr = accumulators_queue.front();
           accumulators_queue.pop();
@@ -300,7 +299,7 @@ void StdThreadQmciClusterSolver<qmci_integrator_type>::start_accumulator(int id)
 
   for (int i = 0; i < n_meas; ++i) {
     {
-      std::lock_guard<std::mutex> lock(mutex_queue);
+      dca::parallel::thread_traits::scoped_lock lock(mutex_queue);
       accumulators_queue.push(&accumulator_obj);
     }
 
@@ -319,7 +318,7 @@ void StdThreadQmciClusterSolver<qmci_integrator_type>::start_accumulator(int id)
 
   ++acc_finished;
   {
-    std::lock_guard<std::mutex> lock(mutex_merge);
+    dca::parallel::thread_traits::scoped_lock lock(mutex_merge);
     accumulator_obj.sum_to(accumulator);
   }
 
@@ -359,7 +358,7 @@ void StdThreadQmciClusterSolver<qmci_integrator_type>::start_walker_and_accumula
   }
 
   ++acc_finished;
-  std::lock_guard<std::mutex> lock(mutex_merge);
+  dca::parallel::thread_traits::scoped_lock lock(mutex_merge);
   accumulator_obj.sum_to(accumulator);
 
   profiler_type::stop_threading(id);

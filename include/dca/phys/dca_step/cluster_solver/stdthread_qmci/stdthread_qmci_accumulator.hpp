@@ -13,11 +13,10 @@
 #define DCA_PHYS_DCA_STEP_CLUSTER_SOLVER_STDTHREAD_QMCI_STDTHREAD_QMCI_ACCUMULATOR_HPP
 
 #include <atomic>
-#include <condition_variable>
-#include <mutex>
 #include <queue>
 #include <stdexcept>
-#include <thread>
+
+#include "dca/config/threading.hpp"
 
 namespace dca {
 namespace phys {
@@ -46,7 +45,7 @@ public:
 
   void wait_for_qmci_walker();
 
-  void measure(std::mutex& mutex_queue, std::queue<this_type*>& accumulators_queue);
+  void measure(dca::parallel::thread_traits::mutex_type& mutex_queue, std::queue<this_type*>& accumulators_queue);
 
   // void sum_to(qmci_accumulator_type& accumulator_obj);
   // int get_expansion_order();
@@ -68,8 +67,8 @@ private:
   int measurements_done_;
   int measurements_to_do_;
   bool measuring;
-  std::condition_variable start_measuring;
-  std::mutex mutex_accumulator;
+  dca::parallel::thread_traits::condition_variable_type start_measuring;
+  dca::parallel::thread_traits::mutex_type mutex_accumulator;
 };
 
 template <class qmci_accumulator_type>
@@ -89,7 +88,7 @@ template <typename walker_type>
 void stdthread_qmci_accumulator<qmci_accumulator_type>::update_from(walker_type& walker) {
   {
     // take a lock and keep it until it goes out of scope
-    std::unique_lock<std::mutex> lock(mutex_accumulator);
+    dca::parallel::thread_traits::unique_lock lock(mutex_accumulator);
     if (measuring)
       throw std::logic_error(__FUNCTION__);
 
@@ -105,14 +104,14 @@ void stdthread_qmci_accumulator<qmci_accumulator_type>::update_from(walker_type&
 
 template <class qmci_accumulator_type>
 void stdthread_qmci_accumulator<qmci_accumulator_type>::wait_for_qmci_walker() {
-  std::unique_lock<std::mutex> lock(mutex_accumulator);
+  dca::parallel::thread_traits::unique_lock lock(mutex_accumulator);
   start_measuring.wait(lock, [this]() { return measuring == true; });
 }
 
 template <class qmci_accumulator_type>
 void stdthread_qmci_accumulator<qmci_accumulator_type>::measure(
-    std::mutex& /*mutex_queue*/, std::queue<this_type*>& /*accumulators_queue*/) {
-  std::unique_lock<std::mutex> lock(mutex_accumulator);
+    dca::parallel::thread_traits::mutex_type& /*mutex_queue*/, std::queue<this_type*>& /*accumulators_queue*/) {
+  dca::parallel::thread_traits::unique_lock lock(mutex_accumulator);
   qmci_accumulator_type::measure();
   measuring = false;
   ++measurements_done_;
@@ -120,7 +119,7 @@ void stdthread_qmci_accumulator<qmci_accumulator_type>::measure(
 
 template <class qmci_accumulator_type>
 void stdthread_qmci_accumulator<qmci_accumulator_type>::sum_to(qmci_accumulator_type& other) {
-  std::unique_lock<std::mutex> lock(mutex_accumulator);
+  dca::parallel::thread_traits::unique_lock lock(mutex_accumulator);
   qmci_accumulator_type::sum_to(other);
 }
 

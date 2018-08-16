@@ -33,7 +33,7 @@ TEST(ThreadPoolTest, Enqueue) {
     EXPECT_EQ(n_threads, pool.size());
 
     auto task = std::bind(workload, std::placeholders::_1, std::ref(input), std::ref(output));
-    std::vector<std::future<void>> futures;
+    std::vector<dca::parallel::thread_traits::future_type<void>> futures;
     for (int id = 0; id < n_items; ++id)
       futures.emplace_back(pool.enqueue(task, id));
 
@@ -64,7 +64,7 @@ TEST(ThreadPoolTest, Enlarge) {
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
     return id;
   };
-  std::vector<std::future<int>> futures;
+  std::vector<dca::parallel::thread_traits::future_type<int>> futures;
 
   for (int i = 0; i < 5; ++i)
     futures.emplace_back(pool.enqueue(workload, i));

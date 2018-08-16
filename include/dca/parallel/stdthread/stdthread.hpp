@@ -19,6 +19,7 @@
 #include <iostream>
 #include <thread>
 #include <vector>
+#include <future>
 
 #include "dca/parallel/stdthread/thread_pool/thread_pool.hpp"
 
@@ -33,7 +34,7 @@ public:
   // [0, num_threads - 1]. Then wait for the completion of the tasks.
   template <class F, class... Args>
   void execute(int num_threads, F&& f, Args&&... args) {
-    std::vector<std::future<void>> futures;
+    std::vector<thread_traits::future_type<void>> futures;
     auto& pool = ThreadPool::get_instance();
     pool.enlarge(num_threads);
 
@@ -52,7 +53,7 @@ public:
   auto sumReduction(int num_threads, F&& f, Args&&... args) {
     using ReturnType = typename std::result_of<F(int, int, Args...)>::type;
 
-    std::vector<std::future<ReturnType>> futures;
+    std::vector<thread_traits::future_type<ReturnType>> futures;
     auto& pool = ThreadPool::get_instance();
     pool.enlarge(num_threads);
 

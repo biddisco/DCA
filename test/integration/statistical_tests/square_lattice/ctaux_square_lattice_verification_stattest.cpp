@@ -10,6 +10,11 @@
 //
 // Verification test of CT-AUX against a reference run
 
+#include "dca/config/haves_defines.hpp"
+#ifdef DCA_HAVE_HPX
+# include <hpx/hpx_main.hpp>
+#endif
+
 #include "dca/math/statistical_testing/statistical_testing.hpp"
 #include "test/integration/statistical_tests/square_lattice/square_lattice_setup.hpp"
 

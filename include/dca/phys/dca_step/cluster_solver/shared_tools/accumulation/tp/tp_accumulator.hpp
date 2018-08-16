@@ -14,7 +14,6 @@
 #include <cmath>
 #include <complex>
 #include <memory>
-#include <mutex>
 #include <stdexcept>
 
 #include "dca/config/config_defines.hpp"

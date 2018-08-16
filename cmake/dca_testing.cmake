@@ -83,7 +83,6 @@ function(dca_add_gtest name)
   if (DCA_ADD_GTEST_HPX AND NOT DCA_HAVE_HPX)
     return()
   endif()
-  message("DCA_HAVE_HPX is ${DCA_HAVE_HPX}")
 
   if (DCA_ADD_GTEST_CUDA AND NOT DCA_HAVE_CUDA)
     return()
@@ -99,6 +98,9 @@ function(dca_add_gtest name)
   if(DCA_ADD_GTEST_HPX AND DCA_HAVE_HPX)
     hpx_setup_target(${test_name})
   endif()
+  if(DCA_ADD_GTEST_STDTHREAD AND DCA_HAVE_HPX)
+    hpx_setup_target(${test_name})
+  endif()
 
   # Create a macro with the project source dir. We use this as the root path for reading files in
   # tests.
@@ -107,6 +109,9 @@ function(dca_add_gtest name)
   if (DCA_ADD_GTEST_GTEST_MAIN)
     # Use gtest main.
     target_link_libraries(${test_name} gtest_main ${DCA_ADD_GTEST_LIBS})
+    if (DCA_ADD_GTEST_STDTHREAD AND DCA_HAVE_HPX)
+      target_compile_definitions(${test_name} PRIVATE "DCA_HPX_MAIN")
+    endif()
   else()
     # Test has its own main.
     target_link_libraries(${test_name} gtest ${DCA_ADD_GTEST_LIBS})
@@ -135,7 +140,7 @@ function(dca_add_gtest name)
     add_test(NAME ${test_name}
              COMMAND ${TEST_RUNNER} ${MPIEXEC_NUMPROC_FLAG} ${DCA_ADD_GTEST_MPI_NUMPROC}
                      ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:${test_name}>")
-                 target_link_libraries(${name} ${MPI_CEEEE_LIBRARIES})
+    target_link_libraries(${test_name} ${MPI_CEEEE_LIBRARIES})
 
   else()
     if (TEST_RUNNER)
