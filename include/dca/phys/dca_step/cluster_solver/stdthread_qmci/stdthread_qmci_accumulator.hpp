@@ -13,11 +13,10 @@
 #define DCA_PHYS_DCA_STEP_CLUSTER_SOLVER_STDTHREAD_QMCI_STDTHREAD_QMCI_ACCUMULATOR_HPP
 
 #include <atomic>
-#include <condition_variable>
-#include <mutex>
 #include <queue>
 #include <stdexcept>
-#include <thread>
+
+#include "dca/config/threading.hpp"
 
 namespace dca {
 namespace phys {
@@ -64,8 +63,8 @@ private:
   int measurements_done_;
   int measurements_to_do_;
   bool measuring_;
-  std::condition_variable start_measuring_;
-  std::mutex mutex_accumulator_;
+  dca::parallel::thread_traits::condition_variable_type start_measuring_;
+  dca::parallel::thread_traits::mutex_type mutex_accumulator_;
 };
 
 template <class QmciAccumulator>
@@ -87,7 +86,7 @@ template <typename walker_type>
 void StdThreadQmciAccumulator<QmciAccumulator>::updateFrom(walker_type& walker) {
   {
     // take a lock and keep it until it goes out of scope
-    std::unique_lock<std::mutex> lock(mutex_accumulator_);
+    dca::parallel::thread_traits::unique_lock lock(mutex_accumulator_);
     if (measuring_)
       throw std::logic_error(__FUNCTION__);
 
@@ -103,22 +102,22 @@ void StdThreadQmciAccumulator<QmciAccumulator>::updateFrom(walker_type& walker) 
 
 template <class QmciAccumulator>
 void StdThreadQmciAccumulator<QmciAccumulator>::waitForQmciWalker() {
-  std::unique_lock<std::mutex> lock(mutex_accumulator_);
+  dca::parallel::thread_traits::unique_lock<std::mutex> lock(mutex_accumulator_);
   start_measuring_.wait(lock, [this]() { return measuring_ == true; });
 }
 
-template <class QmciAccumulator>
-void StdThreadQmciAccumulator<QmciAccumulator>::measure() {
-  std::unique_lock<std::mutex> lock(mutex_accumulator_);
-  QmciAccumulator::measure();
-  measuring_ = false;
+template <class qmci_accumulator_type>
+void stdthread_qmci_accumulator<qmci_accumulator_type>::measure() {
+  dca::parallel::thread_traits::unique_lock lock(mutex_accumulator);
+  qmci_accumulator_type::measure();
+  measuring = false;
   ++measurements_done_;
 }
 
-template <class QmciAccumulator>
-void StdThreadQmciAccumulator<QmciAccumulator>::sumTo(QmciAccumulator& other) {
-  std::unique_lock<std::mutex> lock(mutex_accumulator_);
-  QmciAccumulator::sumTo(other);
+template <class qmci_accumulator_type>
+void stdthread_qmci_accumulator<qmci_accumulator_type>::sum_to(qmci_accumulator_type& other) {
+  dca::parallel::thread_traits::unique_lock lock(mutex_accumulator);
+  qmci_accumulator_type::sum_to(other);
 }
 
 }  // stdthreadqmci

@@ -26,6 +26,9 @@ endif()
 configure_file("${PROJECT_SOURCE_DIR}/include/dca/config/concurrency.hpp.in"
   "${CMAKE_BINARY_DIR}/include/dca/config/concurrency.hpp" @ONLY)
 
+configure_file("${PROJECT_SOURCE_DIR}/include/dca/config/threading.hpp.in"
+  "${CMAKE_BINARY_DIR}/include/dca/config/threading.hpp" @ONLY)
+
 ################################################################################
 # Enable CUDA.
 option(DCA_WITH_CUDA "Enable GPU support." OFF)

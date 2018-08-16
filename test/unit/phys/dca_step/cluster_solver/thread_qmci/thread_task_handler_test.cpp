@@ -10,14 +10,16 @@
 // This file tests the thread task handler.
 
 #include "dca/config/haves_defines.hpp"
+#include "dca/config/threading.hpp"
+#ifdef DCA_HAVE_HPX
+# include <hpx/hpx_main.hpp>
+#endif
+
 #include "dca/phys/dca_step/cluster_solver/thread_task_handler.hpp"
 #include <numeric>
 #include <string>
 #include <vector>
 #include "gtest/gtest.h"
-#ifdef DCA_HAVE_HPX
-# include <hpx/hpx_main.hpp>
-#endif
 
 namespace dca {
 namespace testing {

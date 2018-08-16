@@ -16,6 +16,9 @@
 
 #include "gtest/gtest.h"
 
+#include "dca/config/haves_defines.hpp"
+#include "dca/config/threading.hpp"
+
 #include "dca/function/function.hpp"
 #include "dca/function/util/difference.hpp"
 #include "dca/io/hdf5/hdf5_reader.hpp"
@@ -46,7 +49,6 @@ using Concurrency = dca::parallel::NoConcurrency;
 using RngType = dca::math::random::StdRandomWrapper<std::mt19937_64>;
 using Lattice = dca::phys::models::square_lattice<dca::phys::domains::D4>;
 using Model = dca::phys::models::TightBindingModel<Lattice>;
-using Threading = dca::parallel::stdthread;
 using Parameters = dca::phys::params::Parameters<Concurrency, Threading, dca::profiling::NullProfiler,
                                                  Model, RngType, dca::phys::solver::CT_AUX>;
 using Data = dca::phys::DcaData<Parameters>;

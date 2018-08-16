@@ -1,5 +1,7 @@
 add_subdirectory(mpi_concurrency)
 add_subdirectory(no_concurrency)
 add_subdirectory(no_threading)
-add_subdirectory(stdthread)
+if (NOT DCA_WITH_HPX)
+  add_subdirectory(stdthread)
+endif()
 add_subdirectory(util)

@@ -1,6 +1,8 @@
 # Lattice mapping tests
 
-dca_add_gtest(lattice_mapping_sp_test EXTENSIVE
+dca_add_gtest(lattice_mapping_sp_test
+  EXTENSIVE
+  STDTHREAD
   GTEST_MAIN
   INCLUDE_DIRS ${SIMPLEX_GM_RULE_INCLUDE_DIR} ${FFTW_INCLUDE_DIR}
   LIBS json function cluster_domains time_and_frequency_domains quantum_domains gaussian_quadrature
