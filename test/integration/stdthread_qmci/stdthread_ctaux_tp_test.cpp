@@ -14,10 +14,10 @@
 #include <iostream>
 #include <string>
 
-#include "gtest/gtest.h"
-
 #include "dca/config/haves_defines.hpp"
 #include "dca/config/threading.hpp"
+
+#include "gtest/gtest.h"
 
 #include "dca/function/function.hpp"
 #include "dca/function/util/difference.hpp"
@@ -27,8 +27,13 @@
 #include "dca/math/random/std_random_wrapper.hpp"
 #include "dca/phys/dca_data/dca_data.hpp"
 #include "dca/phys/dca_loop/dca_loop_data.hpp"
-#include "dca/phys/dca_step/cluster_solver/ctaux/ctaux_cluster_solver.hpp"
-#include "dca/phys/dca_step/cluster_solver/stdthread_qmci/stdthread_qmci_cluster_solver.hpp"
+#ifdef DCA_HAVE_HPXXX
+# include "dca/phys/dca_step/cluster_solver/ctaux/ctaux_cluster_solver.hpp"
+# include "dca/phys/dca_step/cluster_solver/stdthread_qmci/stdthread_qmci_cluster_solver.hpp"
+#else
+# include "dca/phys/dca_step/cluster_solver/ctaux/ctaux_cluster_solver.hpp"
+# include "dca/phys/dca_step/cluster_solver/stdthread_qmci/stdthread_qmci_cluster_solver.hpp"
+#endif
 #include "dca/phys/domains/cluster/symmetries/point_groups/2d/2d_square.hpp"
 #include "dca/phys/models/analytic_hamiltonians/square_lattice.hpp"
 #include "dca/phys/models/tight_binding_model.hpp"

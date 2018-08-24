@@ -44,7 +44,7 @@ public:
   // using qmci_accumulator_type::to_JSON;
   using qmci_accumulator_type::get_configuration;
 
-  int get_thread_id() { return thread_id; }
+  inline int get_thread_id() const { return thread_id; }
   template <typename walker_type>
   void update_from(walker_type& walker);
 

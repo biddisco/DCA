@@ -17,6 +17,10 @@
 #include <iostream>
 #include <string>
 
+#define DCA_HPX_MAIN
+#include "dca/config/haves_defines.hpp"
+#include "dca/config/threading.hpp"
+
 #include "gtest/gtest.h"
 
 #include "dca/config/cluster_solver_check.hpp"
@@ -28,7 +32,6 @@
 #include "dca/io/json/json_reader.hpp"
 #include "dca/math/random/std_random_wrapper.hpp"
 #include "dca/parallel/no_concurrency/no_concurrency.hpp"
-//#include "dca/config/threading.hpp"
 #include "dca/phys/dca_data/dca_data.hpp"
 #include "dca/phys/dca_loop/dca_loop.hpp"
 #include "dca/phys/dca_step/cluster_solver/ctaux/ctaux_cluster_solver.hpp"
@@ -151,35 +154,35 @@ TEST(dca_sp_DCAplus_hpx, Self_energy) {
 }
 
 //-----------------------------------------------------------------------------
-int hpx_main(int argc, char *argv[]) {
-    ::testing::InitGoogleTest(&argc, argv);
-    //
-    int result = RUN_ALL_TESTS();
-    hpx::finalize();
-    return result;
-}
+//int hpx_main(int argc, char *argv[]) {
+//    ::testing::InitGoogleTest(&argc, argv);
+//    //
+//    int result = RUN_ALL_TESTS();
+//    hpx::finalize();
+//    return result;
+//}
 
 //-----------------------------------------------------------------------------
-int main(int argc, char* argv[])
-{
-//    using namespace boost::program_options;
+//int main(int argc, char* argv[])
+//{
+////    using namespace boost::program_options;
 
-//    options_description desc_commandline;
-//    desc_commandline.add_options()
-//        ("dummy", value<boost::uint64_t>()->default_value(10),
-//         "Dummy")
-//    ;
+////    options_description desc_commandline;
+////    desc_commandline.add_options()
+////        ("dummy", value<boost::uint64_t>()->default_value(10),
+////         "Dummy")
+////    ;
 
-    // Initialize and run HPX, this example requires to run hpx_main on all
-    // localities
-//    std::vector<std::string> cfg;
-//    cfg.push_back("hpx.run_hpx_main!=1");
+//    // Initialize and run HPX, this example requires to run hpx_main on all
+//    // localities
+////    std::vector<std::string> cfg;
+////    cfg.push_back("hpx.run_hpx_main!=1");
 
-    // We force this test to use several threads by default.
-//    std::vector<std::string> const cfg = {
-//        "hpx.os_threads=all"
-//    };
+//    // We force this test to use several threads by default.
+////    std::vector<std::string> const cfg = {
+////        "hpx.os_threads=all"
+////    };
 
-    // Initialize and run HPX
-    return hpx::init(argc, argv);
-}
+//    // Initialize and run HPX
+//    return hpx::init(argc, argv);
+//}

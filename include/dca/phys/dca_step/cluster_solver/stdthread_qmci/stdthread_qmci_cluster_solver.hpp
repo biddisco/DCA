@@ -124,6 +124,8 @@ StdThreadQmciClusterSolver<qmci_integrator_type>::StdThreadQmciClusterSolver(
   }
 
   for (int i = 0; i < nr_walkers; ++i) {
+    auto seed = parameters.get_seed();
+    std::cout << "Seeding walker "<< i << " with seed " << seed << std::endl;
     rng_vector.emplace_back(concurrency.id(), concurrency.number_of_processors(),
                             parameters.get_seed());
   }
@@ -243,6 +245,7 @@ void StdThreadQmciClusterSolver<qmci_integrator_type>::start_walker(int id) {
           acc_ptr = accumulators_queue.front();
           accumulators_queue.pop();
         }
+        dca::parallel::thread_traits::yield();
       }
 
       acc_ptr->update_from(walker);

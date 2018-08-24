@@ -19,13 +19,14 @@
 #include <hpx/lcos/local/spinlock.hpp>
 #include <hpx/lcos/local/condition_variable.hpp>
 #include <hpx/lcos/future.hpp>
+#include <hpx/include/threads.hpp>
+#include <hpx/util/demangle_helper.hpp>
 //
 #include <vector>
 #include <thread>
 
 namespace dca {
 namespace parallel {
-
 
 struct thread_traits {
     template <typename T>
@@ -34,6 +35,9 @@ struct thread_traits {
     using condition_variable_type   = hpx::lcos::local::condition_variable;
     using scoped_lock               = std::lock_guard<mutex_type>;
     using unique_lock               = std::unique_lock<mutex_type>;
+    static void yield() {
+        hpx::this_thread::yield();
+    }
 };
 
 class ThreadPool {
@@ -46,21 +50,41 @@ public:
   ThreadPool(ThreadPool&& /*other*/) = default;
 
   // // we don't do anything here
-  void enlarge(std::size_t /*n_threads*/) {}
+  void enlarge(std::size_t n_threads) {
+      std::cout << "HPX threadpool enlarge" << n_threads << std::endl;
+  }
 
   // Call asynchronously the function f with arguments args. This method is thread safe.
   // Returns: a future to the result of f(args...).
   template <class F, class... Args>
   auto enqueue(F&& f, Args&&... args)
   {
-    return hpx::async(f, args...);
+    std::cout << "HPX threadpool enqueue\n";
+    std::cout << "\n-------------------------------\n";
+    std::cout << "enqueue: Function    : "
+              << hpx::debug::print_type<F>() << "\n";
+    std::cout << "enqueue: Arguments   : "
+              << hpx::debug::print_type<Args...>(" | ") << std::endl;
+
+    typedef decltype(hpx::async(std::forward<F>(f), std::forward<Args>(args)...)) return_type;
+
+return    hpx::async(std::forward<F>(f), std::forward<Args>(args)...);
+//    std::cout << "HPX threadpool enqueue done\n";
+//    std::cout << "\n-------------------------------\n";
+//    return hpx::make_ready_future(return_type());
   }
 
-  // Conclude all the pending work and destroy the threds spawned by this class.
+  // Conclude all the pending work and destroy the threads spawned by this class.
   ~ThreadPool() {}
+
+  // We will not be using the pool for a while - put threads to sleep
+  void suspend() {
+      hpx::suspend();
+  }
 
   // Returns the number of threads used by this class.
   std::size_t size() const {
+    std::cout << "HPX threadpool size" << std::endl;
     return hpx::get_num_worker_threads();
   }
 
