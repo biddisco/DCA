@@ -111,6 +111,8 @@ function(dca_add_gtest name)
     target_link_libraries(${test_name} gtest_main ${DCA_ADD_GTEST_LIBS})
     if (DCA_ADD_GTEST_STDTHREAD AND DCA_HAVE_HPX)
       target_compile_definitions(${test_name} PRIVATE "DCA_HPX_MAIN")
+      set(TEST_COMMAND_LINE_OPTIONS
+          ${TEST_COMMAND_LINE_OPTIONS} "--hpx:ini=hpx.stacks.small_size=131072")
     endif()
   else()
     # Test has its own main.
@@ -139,17 +141,20 @@ function(dca_add_gtest name)
 
     add_test(NAME ${test_name}
              COMMAND ${TEST_RUNNER} ${MPIEXEC_NUMPROC_FLAG} ${DCA_ADD_GTEST_MPI_NUMPROC}
-                     ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:${test_name}>")
+                     ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:${test_name}>"
+                     "${TEST_COMMAND_LINE_OPTIONS}")
     target_link_libraries(${test_name} ${MPI_CEEEE_LIBRARIES})
 
   else()
     if (TEST_RUNNER)
       add_test(NAME ${test_name}
                COMMAND ${TEST_RUNNER} ${MPIEXEC_NUMPROC_FLAG} 1
-                   ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:${test_name}>")
+                   ${MPIEXEC_PREFLAGS} "$<TARGET_FILE:${test_name}>"
+                   "${TEST_COMMAND_LINE_OPTIONS}")
     else (TEST_RUNNER)
       add_test(NAME ${test_name}
-               COMMAND "$<TARGET_FILE:${test_name}>")
+               COMMAND "$<TARGET_FILE:${test_name}>"
+               "${TEST_COMMAND_LINE_OPTIONS}")
     endif (TEST_RUNNER)
   endif()
 
