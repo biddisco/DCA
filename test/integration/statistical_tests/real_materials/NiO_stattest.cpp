@@ -13,7 +13,10 @@
 
 #include "gtest/gtest.h"
 
+#define DCA_HPX_MAIN
+#include "dca/config/haves_defines.hpp"
 #include "dca/config/threading.hpp"
+
 #include "dca/math/statistical_testing/function_cut.hpp"
 #include "dca/math/statistical_testing/statistical_testing.hpp"
 #include "dca/math/random/std_random_wrapper.hpp"
@@ -27,6 +30,8 @@
 #include "dca/testing/minimalist_printer.hpp"
 #include "dca/util/git_version.hpp"
 #include "dca/util/modules.hpp"
+
+#include <string>
 
 // needed only if solver output is written
 //#include "dca/phys/dca_loop/dca_loop_data.hpp"

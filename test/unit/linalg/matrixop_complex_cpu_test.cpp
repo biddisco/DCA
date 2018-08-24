@@ -247,7 +247,7 @@ TYPED_TEST(MatrixopComplexCPUTest, MultiplyDiagonal) {
 
     for (int j = 0; j < a.nrCols(); ++j)
       for (int i = 0; i < a.nrRows(); ++i) {
-        EXPECT_GE(10 * this->epsilon, std::abs(b(i, j) - d[i] * a(i, j)));
+        EXPECT_GE(20 * this->epsilon, std::abs(b(i, j) - d[i] * a(i, j)));
       }
   }
   {
@@ -258,7 +258,7 @@ TYPED_TEST(MatrixopComplexCPUTest, MultiplyDiagonal) {
 
     for (int j = 0; j < a.nrCols(); ++j)
       for (int i = 0; i < a.nrRows(); ++i) {
-        EXPECT_GE(10 * this->epsilon, std::abs(b(i, j) - d[j] * a(i, j)));
+        EXPECT_GE(20 * this->epsilon, std::abs(b(i, j) - d[j] * a(i, j)));
       }
   }
 }
@@ -718,7 +718,7 @@ TYPED_TEST(MatrixopComplexCPUTest, ScaleRow) {
 
     for (int j = 0; j < a.nrCols(); ++j) {
       for (int i = 0; i < is.size(); ++i) {
-        EXPECT_GE(10 * this->epsilon, std::abs(vals[i] * a(is[i], j) - c(is[i], j)));
+        EXPECT_GE(50 * this->epsilon, std::abs(vals[i] * a(is[i], j) - c(is[i], j)));
         // set the checked elements to -1000 to simplify the check of the unchanged elements
         c(is[i], j) = checked;
       }
@@ -734,7 +734,7 @@ TYPED_TEST(MatrixopComplexCPUTest, ScaleRow) {
 
     for (int j = 0; j < a.nrCols(); ++j) {
       for (int i = 0; i < is.size(); ++i) {
-        EXPECT_GE(10 * this->epsilon, std::abs(vals[i] * a(is[i], j) - c(is[i], j)));
+        EXPECT_GE(50 * this->epsilon, std::abs(vals[i] * a(is[i], j) - c(is[i], j)));
         // set the checked elements to -1000 to simplify the check of the unchanged elements
         c(is[i], j) = checked;
       }
