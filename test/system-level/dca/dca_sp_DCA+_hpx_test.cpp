@@ -20,9 +20,13 @@
 #define DCA_HPX_MAIN
 #include "dca/config/haves_defines.hpp"
 #include "dca/config/threading.hpp"
-
+//
+#ifndef DCA_HAVE_HPX
+# error "This test can only be compiled with HPX support"
+#endif
+//
 #include "gtest/gtest.h"
-
+//
 #include "dca/config/cluster_solver_check.hpp"
 #include "dca/config/hpx_defines.hpp"
 #include "dca/config/cmake_options.hpp"
@@ -36,11 +40,7 @@
 #include "dca/phys/dca_loop/dca_loop.hpp"
 #include "dca/phys/dca_step/cluster_solver/ctaux/ctaux_cluster_solver.hpp"
 
-#ifdef DCA_HAVE_HPX
-# include "dca/phys/dca_step/cluster_solver/hpx_qmci/hpx_qmci_cluster_solver.hpp"
-#else
-# error "This test can only be compiled with HPX support"
-#endif
+#include "dca/phys/dca_step/cluster_solver/hpx_qmci/hpx_qmci_cluster_solver.hpp"
 
 #include "dca/phys/domains/cluster/cluster_domain.hpp"
 #include "dca/phys/domains/cluster/symmetries/point_groups/2d/2d_square.hpp"
@@ -152,37 +152,3 @@ TEST(dca_sp_DCAplus_hpx, Self_energy) {
 
   std::cout << "\nFinish time: " << dca::util::print_time() << "\n" << std::endl;
 }
-
-//-----------------------------------------------------------------------------
-//int hpx_main(int argc, char *argv[]) {
-//    ::testing::InitGoogleTest(&argc, argv);
-//    //
-//    int result = RUN_ALL_TESTS();
-//    hpx::finalize();
-//    return result;
-//}
-
-//-----------------------------------------------------------------------------
-//int main(int argc, char* argv[])
-//{
-////    using namespace boost::program_options;
-
-////    options_description desc_commandline;
-////    desc_commandline.add_options()
-////        ("dummy", value<boost::uint64_t>()->default_value(10),
-////         "Dummy")
-////    ;
-
-//    // Initialize and run HPX, this example requires to run hpx_main on all
-//    // localities
-////    std::vector<std::string> cfg;
-////    cfg.push_back("hpx.run_hpx_main!=1");
-
-//    // We force this test to use several threads by default.
-////    std::vector<std::string> const cfg = {
-////        "hpx.os_threads=all"
-////    };
-
-//    // Initialize and run HPX
-//    return hpx::init(argc, argv);
-//}
