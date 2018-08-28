@@ -18,6 +18,7 @@
 #define DCA_MATH_RANDOM_STD_RANDOM_WRAPPER_HPP
 
 #include <cstdint>  // for uint64_t
+#include <iostream>
 #include <random>
 #include "dca/math/random/random_utils.hpp"
 
@@ -53,7 +54,7 @@ public:
   inline uint64_t getInitialSeed() const {
     return initial_seed_;
   }
-  
+
   inline uint64_t getSeed() const {
     return seed_;
   }
@@ -65,7 +66,9 @@ public:
 
   // Returns a uniformly distributied pseudo-random number in the interval [0, 1).
   inline double operator()() {
-    return distro_(engine_);
+    auto num = distro_(engine_);
+    std::cout << num << " ";
+    return num;
   }
 
 private:
