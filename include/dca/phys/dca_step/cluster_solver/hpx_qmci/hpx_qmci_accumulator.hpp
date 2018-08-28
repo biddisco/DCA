@@ -44,9 +44,10 @@ public:
   // using qmci_accumulator_type::to_JSON;
   using qmci_accumulator_type::get_configuration;
 
+  inline int get_measurement_number() const { return measurement_number; }
   inline int get_thread_id() const { return thread_id; }
   template <typename walker_type>
-  void update_from(walker_type& walker);
+  void update_from(walker_type& walker, int meas_number);
 
   void measure();
 
@@ -64,6 +65,7 @@ private:
   using qmci_accumulator_type::data_;
 
   int thread_id;
+  int measurement_number;
 };
 
 //----------------------------------------------------------------------------
@@ -86,11 +88,12 @@ hpx_qmci_accumulator<qmci_accumulator_type>::~hpx_qmci_accumulator()
 //----------------------------------------------------------------------------
 template <class qmci_accumulator_type>
 template <typename walker_type>
-void hpx_qmci_accumulator<qmci_accumulator_type>::update_from(walker_type& walker) {
-  {
-    DCA_LOG("hpx_qmci_accumulator update_from");
-    qmci_accumulator_type::update_from(walker);
-  }
+void hpx_qmci_accumulator<qmci_accumulator_type>::update_from(
+        walker_type& walker, int meas_number)
+{
+  DCA_LOG("hpx_qmci_accumulator update_from");
+  measurement_number = meas_number;
+  qmci_accumulator_type::update_from(walker);
 }
 
 //----------------------------------------------------------------------------
