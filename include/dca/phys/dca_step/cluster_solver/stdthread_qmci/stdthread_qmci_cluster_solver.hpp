@@ -240,11 +240,16 @@ void StdThreadQmciClusterSolver<qmci_integrator_type>::start_walker(int id) {
       acc_ptr = NULL;
 
       while (acc_ptr == NULL) {  // checking for available accumulators
-        std::unique_lock<dca::parallel::thread_traits::mutex_type> lock(mutex_queue);
-        if (!accumulators_queue.empty()) {
-          acc_ptr = accumulators_queue.front();
-          accumulators_queue.pop();
+        {
+            dca::parallel::thread_traits::scoped_lock lock(mutex_queue);
+            if (!accumulators_queue.empty()) {
+                acc_ptr = accumulators_queue.front();
+                accumulators_queue.pop();
+            }
         }
+        // make sure yield is outside of lock scope, this is here
+        // to allow another thread to put an accumulator onto the queue
+        // if only a single thread is being used (at a time, e.g hpx::threads=1)
         dca::parallel::thread_traits::yield();
       }
 
