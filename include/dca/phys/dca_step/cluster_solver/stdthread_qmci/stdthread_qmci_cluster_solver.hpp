@@ -221,8 +221,21 @@ void StdThreadQmciClusterSolver<QmciSolver>::startWalker(int id) {
         queue_insertion_.wait(lock, [&]() { return !accumulators_queue_.empty(); });
         acc_ptr = accumulators_queue_.front();
         accumulators_queue_.pop();
+/*
+      while (acc_ptr == NULL) {  // checking for available accumulators
+        {
+            dca::parallel::thread_traits::scoped_lock lock(mutex_queue);
+            if (!accumulators_queue.empty()) {
+                acc_ptr = accumulators_queue.front();
+                accumulators_queue.pop();
+            }
+        }
+        // make sure yield is outside of lock scope, this is here
+        // to allow another thread to put an accumulator onto the queue
+        // if only a single thread is being used (at a time, e.g hpx::threads=1)
+        dca::parallel::thread_traits::yield();
       }
-
+*/
       acc_ptr->updateFrom(walker);
     }
   }
