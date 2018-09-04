@@ -38,6 +38,9 @@ struct thread_traits {
     using condition_variable_type   = std::condition_variable;
     using scoped_lock               = std::lock_guard<mutex_type>;
     using unique_lock               = std::unique_lock<mutex_type>;
+    static void yield() {
+        std::this_thread::yield();
+    }
 };
 
 class ThreadPool {
