@@ -6,7 +6,6 @@
 
 dca_add_gtest(NiO_stattest
     STOCHASTIC
-    EXTENSIVE
     STDTHREAD
     # Run with more ranks for better error detection.
     MPI MPI_NUMPROC 1

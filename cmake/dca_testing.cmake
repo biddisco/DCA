@@ -24,7 +24,7 @@ include(CMakeParseArguments)
 # MPI or CUDA may be given to indicate that the test requires these libraries. MPI_NUMPROC is the
 # number of MPI processes to use for a test with MPI, the default value is 1.
 function(dca_add_gtest name)
-  set(options FAST EXTENSIVE STOCHASTIC PERFORMANCE GTEST_MAIN MPI CUDA STDTHREAD HPX CUDA)
+  set(options FAST EXTENSIVE STOCHASTIC PERFORMANCE GTEST_MAIN MPI CUDA STDTHREAD HPX)
   set(oneValueArgs MPI_NUMPROC)
   set(multiValueArgs INCLUDE_DIRS SOURCES LIBS)
   cmake_parse_arguments(DCA_ADD_GTEST "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})

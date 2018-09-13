@@ -7,7 +7,6 @@ set(TEST_LIBS     ${DCA_LIBS};statistical_testing)
 
 dca_add_gtest(ctaux_square_lattice_verification_stattest
     STOCHASTIC
-    EXTENSIVE
     STDTHREAD
     # Run with more ranks for better error detection.
     MPI MPI_NUMPROC 1
