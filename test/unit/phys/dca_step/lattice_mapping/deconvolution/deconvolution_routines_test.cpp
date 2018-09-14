@@ -92,14 +92,3 @@ TEST(DeconvolutionRoutinesTest, ProjectionOperator) {
       EXPECT_DOUBLE_EQ(projection_op_symmetrized(i, j), projection_op_source_symmetrized(i, j));
     }
 }
-
-//#ifdef DCA_HAVE_HPX
-//int hpx_main(int argc, char *argv[]) {
-//    std::cout << "Running test in HPX thread\n";
-//    ::testing::InitGoogleTest(&argc, argv);
-//    //
-//    int result = RUN_ALL_TESTS();
-//    hpx::finalize();
-//    return result;
-//}
-//#endif

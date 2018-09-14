@@ -112,14 +112,3 @@ TEST(ThreadTaskHandlerDeathTest, walkerIDToRngIndex) {
   EXPECT_DEATH(handler.walkerIDToRngIndex(3), "thread_tasks_.walker_id. == .walker.");
 }
 #endif  // NDEBUG
-
-#ifdef DCA_HAVE_HPX
-int hpx_main(int argc, char *argv[]) {
-    std::cout << "Running test in HPX thread\n";
-    ::testing::InitGoogleTest(&argc, argv);
-    //
-    int result = RUN_ALL_TESTS();
-    hpx::finalize();
-    return result;
-}
-#endif
