@@ -185,7 +185,7 @@ HPXQmciClusterSolver<qmci_integrator_type>::HPXQmciClusterSolver(parameters_type
       acc_finished(0),
       nr_walkers(parameters.get_walkers()),
       nr_accumulators(parameters.get_accumulators()),
-      thread_task_handler_(nr_walkers, nr_accumulators, parameters_ref.shared_walk_and_accumulation_thread()),
+      thread_task_handler_(nr_walkers, nr_accumulators),
       large_stack_executor(hpx::threads::thread_stacksize_large)
 {
   DCA_LOG("HPXQmciClusterSolver constructor");
