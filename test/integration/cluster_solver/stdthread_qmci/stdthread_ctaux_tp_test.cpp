@@ -16,6 +16,9 @@
 
 #include "dca/config/haves_defines.hpp"
 #include "dca/config/threading.hpp"
+#ifdef DCA_HAVE_HPX
+# include <hpx/hpx_main.hpp>
+#endif
 
 #include "gtest/gtest.h"
 
@@ -27,7 +30,7 @@
 #include "dca/math/random/std_random_wrapper.hpp"
 #include "dca/phys/dca_data/dca_data.hpp"
 #include "dca/phys/dca_loop/dca_loop_data.hpp"
-#ifdef DCA_HAVE_HPXXX
+#ifdef DCA_HAVE_HPX
 # include "dca/phys/dca_step/cluster_solver/ctaux/ctaux_cluster_solver.hpp"
 # include "dca/phys/dca_step/cluster_solver/stdthread_qmci/stdthread_qmci_cluster_solver.hpp"
 # include "dca/phys/domains/cluster/momentum_exchange_domain.hpp"
