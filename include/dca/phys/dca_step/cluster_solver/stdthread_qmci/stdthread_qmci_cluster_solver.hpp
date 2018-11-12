@@ -88,7 +88,7 @@ private:
 
   dca::parallel::thread_traits::mutex_type mutex_merge_;
   dca::parallel::thread_traits::mutex_type mutex_queue_;
-  dca::parallel::thread_traits::condition_variable queue_insertion_;
+  dca::parallel::thread_traits::condition_variable_type queue_insertion_;
 };
 
 template <class QmciSolver>
