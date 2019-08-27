@@ -17,6 +17,9 @@
 
 #include "gtest/gtest.h"
 
+#include "dca/config/haves_defines.hpp"
+#include "dca/config/threading.hpp"
+
 #include "dca/function/function.hpp"
 #include "dca/function/util/difference.hpp"
 #include "dca/io/json/json_reader.hpp"
@@ -26,7 +29,6 @@
 #include "dca/phys/models/analytic_hamiltonians/twoband_chain.hpp"
 #include "dca/phys/models/tight_binding_model.hpp"
 #include "dca/parallel/mpi_concurrency/mpi_concurrency.hpp"
-#include "dca/parallel/stdthread/stdthread.hpp"
 #include "dca/phys/parameters/parameters.hpp"
 #include "dca/profiling/null_profiler.hpp"
 #include "dca/testing/minimalist_printer.hpp"
@@ -46,7 +48,6 @@ using Model1 = dca::phys::models::TightBindingModel<
     dca::phys::models::singleband_chain<dca::phys::domains::no_symmetry<2>>>;
 using Model2 = dca::phys::models::TightBindingModel<
     dca::phys::models::twoband_chain<dca::phys::domains::no_symmetry<2>>>;
-using Threading = dca::parallel::stdthread;
 
 #ifdef UPDATE_BASELINE
 using Parameters = dca::phys::params::Parameters<Concurrency, Threading, dca::profiling::NullProfiler,

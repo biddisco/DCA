@@ -144,6 +144,7 @@ void MPICollectiveSum::sum(scalar_type& value) const {
 
 template <typename scalar_type>
 void MPICollectiveSum::sum(std::vector<scalar_type>& m) const {
+  DCA_LOG("MPICollectiveSum::sum std::vector<scalar_type>");
   std::vector<scalar_type> result(m.size(), scalar_type(0));
 
   MPI_Allreduce(&(m[0]), &(result[0]), MPITypeMap<scalar_type>::factor() * m.size(),
@@ -155,6 +156,7 @@ void MPICollectiveSum::sum(std::vector<scalar_type>& m) const {
 template <typename scalar_type>
 void MPICollectiveSum::sum(std::map<std::string, std::vector<scalar_type>>& m) const {
   typedef typename std::map<std::string, std::vector<scalar_type>>::iterator iterator_type;
+  DCA_LOG("MPICollectiveSum::sum std::map");
 
   iterator_type it = m.begin();
 
@@ -175,6 +177,7 @@ template <typename scalar_type, class domain>
 void MPICollectiveSum::sum(func::function<scalar_type, domain>& f) const {
   func::function<scalar_type, domain> f_sum;
 
+  DCA_LOG("MPICollectiveSum::sum func::function");
   MPI_Allreduce(f.values(), f_sum.values(), MPITypeMap<scalar_type>::factor() * f.size(),
                 MPITypeMap<scalar_type>::value(), MPI_SUM, MPIProcessorGrouping::get());
 
@@ -192,6 +195,7 @@ void MPICollectiveSum::sum(func::function<scalar_type, domain>& f) const {
 template <typename scalar_type, class domain>
 void MPICollectiveSum::sum(const func::function<scalar_type, domain>& f_in,
                            func::function<scalar_type, domain>& f_out) const {
+  DCA_LOG("MPICollectiveSum::sum const func::function");
   MPI_Allreduce(f_in.values(), f_out.values(), MPITypeMap<scalar_type>::factor() * f_in.size(),
                 MPITypeMap<scalar_type>::value(), MPI_SUM, MPIProcessorGrouping::get());
 }
@@ -200,6 +204,7 @@ template <typename scalar_type, class domain>
 void MPICollectiveSum::sum(func::function<std::vector<scalar_type>, domain>& f) const {
   int Nr = f(0).size();
   int Nc = f.size();
+  DCA_LOG("MPICollectiveSum::sum func::function<std::vector<scalar_type>, domain>");
 
   linalg::Matrix<scalar_type, linalg::CPU> M("M", std::pair<int, int>(Nr, Nc));
 

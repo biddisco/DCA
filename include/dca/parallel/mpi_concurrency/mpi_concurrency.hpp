@@ -19,6 +19,11 @@
 #include <utility>
 #include <stdexcept>
 
+#include "dca/config/haves_defines.hpp"
+#include "dca/config/config_defines.hpp"
+#include "dca/config/hpx_defines.hpp"
+#include "dca/parallel/hpx/hpx.hpp"
+
 #include <mpi.h>
 
 #include "dca/parallel/mpi_concurrency/mpi_collective_max.hpp"
@@ -77,6 +82,7 @@ private:
 template <typename object_type>
 bool MPIConcurrency::broadcast(object_type& object, int root_id) const {
   assert(root_id > -1 and root_id < number_of_processors());
+  DCA_LOG("MPIConcurrency::broadcast_object 1");
 
   int position = 0;
 
@@ -114,6 +120,7 @@ bool MPIConcurrency::broadcast(object_type& object, int root_id) const {
 template <typename object_type>
 bool MPIConcurrency::broadcast_object(object_type& object, int root_id) const {
   assert(root_id > -1 and root_id < number_of_processors());
+  DCA_LOG("MPIConcurrency::broadcast_object 2");
 
   int buffer_size = 0;
 

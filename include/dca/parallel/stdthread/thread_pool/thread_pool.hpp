@@ -33,6 +33,8 @@ namespace parallel {
 
 struct thread_traits {
     template <typename T>
+    using promise_type              = std::promise<T>;
+    template <typename T>
     using future_type               = std::future<T>;
     using mutex_type                = std::mutex;
     using condition_variable_type   = std::condition_variable;

@@ -99,6 +99,7 @@ function(dca_add_gtest name)
     hpx_setup_target(${test_name})
   endif()
   if(DCA_ADD_GTEST_STDTHREAD AND DCA_HAVE_HPX)
+    message("HPX config for ${test_name}")
     hpx_setup_target(${test_name})
   endif()
 
@@ -111,8 +112,13 @@ function(dca_add_gtest name)
     target_link_libraries(${test_name} gtest_main ${DCA_ADD_GTEST_LIBS})
     if (DCA_ADD_GTEST_STDTHREAD AND DCA_HAVE_HPX)
       target_compile_definitions(${test_name} PRIVATE "DCA_HPX_MAIN")
+      message("HPX command-line-options for ${test_name}")
       set(TEST_COMMAND_LINE_OPTIONS
-          ${TEST_COMMAND_LINE_OPTIONS} "--hpx:ini=hpx.stacks.small_size=131072")
+          "${TEST_COMMAND_LINE_OPTIONS} --hpx:ini=hpx.stacks.small_size=131072")
+      if (DCA_ADD_GTEST_MPI_NUMPROC GREATER 1)
+          set(TEST_COMMAND_LINE_OPTIONS
+              "${TEST_COMMAND_LINE_OPTIONS} --hpx:threads=1")
+      endif()
     endif()
   else()
     # Test has its own main.

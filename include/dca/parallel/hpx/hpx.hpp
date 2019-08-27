@@ -20,23 +20,38 @@
 #include <hpx/lcos/local/condition_variable.hpp>
 #include <hpx/lcos/future.hpp>
 #include <hpx/include/threads.hpp>
-#include <hpx/util/demangle_helper.hpp>
+#include <hpx/runtime/threads/thread.hpp>
+#include <hpx/runtime/threads/executors/signalling_executor.hpp>
+#include <hpx/util/debug/demangle_helper.hpp>
 //
 #include <vector>
 #include <thread>
+
+// #define DCA_HPX_THREAD_POOL_DEBUG
 
 namespace dca {
 namespace parallel {
 
 struct thread_traits {
     template <typename T>
+    using promise_type              = hpx::lcos::promise<T>;
+    template <typename T>
     using future_type               = hpx::lcos::future<T>;
     using mutex_type                = hpx::lcos::local::mutex;
     using condition_variable_type   = hpx::lcos::local::condition_variable;
     using scoped_lock               = std::lock_guard<mutex_type>;
     using unique_lock               = std::unique_lock<mutex_type>;
+    //
+    static void sleep_for(hpx::util::steady_duration const& rel_time) {
+        hpx::this_thread::sleep_for(rel_time);
+    }
+    //
     static void yield() {
         hpx::this_thread::yield();
+    }
+    //
+    static std::uint64_t default_threadcount() {
+        return hpx::get_num_worker_threads();
     }
 };
 
@@ -44,14 +59,31 @@ class ThreadPool {
 public:
   // Creates a pool with n_threads.
     // Actually does nothing, HPX does not need to allocate threads
-  ThreadPool(size_t /*n_threads*/ = 0) {}
+  ThreadPool(size_t n_threads = 1) : exec(100) {
+    set_task_count_threshold(n_threads-1);
+  }
 
   ThreadPool(const ThreadPool& /*other*/) = delete;
   ThreadPool(ThreadPool&& /*other*/) = default;
 
-  // // we don't do anything here
+  // Conclude all the pending work and destroy the threads spawned by this class.
+  ~ThreadPool() {
+      exec.set_and_wait(0);
+  }
+
+  void set_task_count_threshold(std::int64_t count)
+  {
+    exec.set_threshold(count);
+  }
+
+  void wait_for_tasks()
+  {
+    exec.wait();
+  }
+
+  // we don't do anything here
   void enlarge(std::size_t n_threads) {
-      std::cout << "HPX threadpool enlarge" << n_threads << std::endl;
+      std::cout << "HPX threadpool enlarge: " << n_threads << std::endl;
   }
 
   // Call asynchronously the function f with arguments args. This method is thread safe.
@@ -59,23 +91,17 @@ public:
   template <class F, class... Args>
   auto enqueue(F&& f, Args&&... args)
   {
+#ifdef DCA_HPX_THREAD_POOL_DEBUG
     std::cout << "HPX threadpool enqueue\n";
     std::cout << "\n-------------------------------\n";
     std::cout << "enqueue: Function    : "
-              << hpx::debug::print_type<F>() << "\n";
+              << hpx::util::debug::print_type<F>() << "\n";
     std::cout << "enqueue: Arguments   : "
-              << hpx::debug::print_type<Args...>(" | ") << std::endl;
-
-    typedef decltype(hpx::async(std::forward<F>(f), std::forward<Args>(args)...)) return_type;
-
-return    hpx::async(std::forward<F>(f), std::forward<Args>(args)...);
-//    std::cout << "HPX threadpool enqueue done\n";
-//    std::cout << "\n-------------------------------\n";
-//    return hpx::make_ready_future(return_type());
+              << hpx::util::debug::print_type<Args...>(" | ") << std::endl;
+#endif
+//    typedef decltype(hpx::async(exec, std::forward<F>(f), std::forward<Args>(args)...)) return_type;
+    return hpx::async(exec, std::forward<F>(f), std::forward<Args>(args)...);
   }
-
-  // Conclude all the pending work and destroy the threads spawned by this class.
-  ~ThreadPool() {}
 
   // We will not be using the pool for a while - put threads to sleep
   void suspend() {
@@ -93,6 +119,9 @@ return    hpx::async(std::forward<F>(f), std::forward<Args>(args)...);
     static ThreadPool global_pool;
     return global_pool;
   }
+
+  hpx::threads::executors::signalling_executor
+    <hpx::threads::executors::default_executor> exec;
 };
 
 
@@ -113,7 +142,8 @@ struct hpxthread
     // Fork.
     for (int id = 0; id < num_threads; ++id)
       futures.emplace_back(
-          pool.enqueue(std::forward<F>(f), id, num_threads, std::forward<Args>(args)...));
+          pool.enqueue(std::forward<F>(f),
+            id, num_threads,std::forward<Args>(args)...));
 
     // Join.
     for (auto& future : futures)

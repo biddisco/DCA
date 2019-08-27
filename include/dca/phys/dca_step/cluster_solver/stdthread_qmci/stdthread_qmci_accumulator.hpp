@@ -102,22 +102,22 @@ void StdThreadQmciAccumulator<QmciAccumulator>::updateFrom(walker_type& walker) 
 
 template <class QmciAccumulator>
 void StdThreadQmciAccumulator<QmciAccumulator>::waitForQmciWalker() {
-  dca::parallel::thread_traits::unique_lock<std::mutex> lock(mutex_accumulator_);
+  dca::parallel::thread_traits::unique_lock lock(mutex_accumulator_);
   start_measuring_.wait(lock, [this]() { return measuring_ == true; });
 }
 
 template <class qmci_accumulator_type>
-void stdthread_qmci_accumulator<qmci_accumulator_type>::measure() {
-  dca::parallel::thread_traits::unique_lock lock(mutex_accumulator);
+void StdThreadQmciAccumulator<qmci_accumulator_type>::measure() {
+  dca::parallel::thread_traits::scoped_lock lock(mutex_accumulator_);
   qmci_accumulator_type::measure();
-  measuring = false;
+  measuring_ = false;
   ++measurements_done_;
 }
 
 template <class qmci_accumulator_type>
-void stdthread_qmci_accumulator<qmci_accumulator_type>::sum_to(qmci_accumulator_type& other) {
-  dca::parallel::thread_traits::unique_lock lock(mutex_accumulator);
-  qmci_accumulator_type::sum_to(other);
+void StdThreadQmciAccumulator<qmci_accumulator_type>::sumTo(qmci_accumulator_type& other) {
+  dca::parallel::thread_traits::scoped_lock lock(mutex_accumulator_);
+  qmci_accumulator_type::sumTo(other);
 }
 
 }  // stdthreadqmci

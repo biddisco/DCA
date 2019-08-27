@@ -29,7 +29,7 @@ namespace hpxqmci {
 
 template <class qmci_accumulator_type>
 class hpx_qmci_accumulator : protected qmci_accumulator_type {
-  typedef typename qmci_accumulator_type::my_parameters_type parameters_type;
+  typedef typename qmci_accumulator_type::ParametersType parameters_type;
   using Data = typename qmci_accumulator_type::DataType;
 
   typedef hpx_qmci_accumulator<qmci_accumulator_type> this_type;
@@ -60,7 +60,7 @@ protected:
   using qmci_accumulator_type::get_Gflop;
 
 private:
-  using qmci_accumulator_type::parameters;
+  using qmci_accumulator_type::parameters_;
   using qmci_accumulator_type::data_;
 
   int thread_id;
@@ -89,7 +89,7 @@ template <typename walker_type>
 void hpx_qmci_accumulator<qmci_accumulator_type>::update_from(walker_type& walker) {
   {
     DCA_LOG("hpx_qmci_accumulator update_from");
-    qmci_accumulator_type::update_from(walker);
+    qmci_accumulator_type::updateFrom(walker);
   }
 }
 
@@ -106,7 +106,7 @@ template <class qmci_accumulator_type>
 void hpx_qmci_accumulator<qmci_accumulator_type>::sum_to(qmci_accumulator_type& other)
 {
   DCA_LOG("hpx_qmci_accumulator sum_to");
-  qmci_accumulator_type::sum_to(other);
+  qmci_accumulator_type::sumTo(other);
 }
 
 }}}}
